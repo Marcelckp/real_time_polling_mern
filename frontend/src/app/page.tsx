@@ -1,6 +1,28 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [pollData, setPollData] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:3030/poll");
+        const { data } = await response.json();
+        setPollData(data);
+      } catch (error) {
+        console.error("Error fetching poll data:", error);
+      }
+    };
+
+    fetchData();
+
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="flex justify-center items-center bg-white dark:bg-gray-900 h-screen">
       <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
@@ -11,13 +33,23 @@ export default function Home() {
           Create Polls easily. Share with friends and see results as they get
           added realtime!
         </p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
-          <Link
-            href="/dashboard"
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900"
-          >
-            Get started {'->'}
-          </Link>
+        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 flex-wrap gap-5">
+          {pollData ? (
+            pollData?.map((poll: any) => (
+              <div
+                key={poll.id}
+                className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {poll.text}
+                </h2>
+              </div>
+            ))
+          ) : (
+            <p className="text-lg text-gray-700 dark:text-gray-300">
+              Loading...
+            </p>
+          )}
         </div>
       </div>
     </section>
